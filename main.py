@@ -10,6 +10,8 @@ def main():
     {
         int test_multimap = m[12][23];
         
+        int func_call = foo()[1][2];
+
         int a = 0;
         int g, g2 = g, g = 90;
         

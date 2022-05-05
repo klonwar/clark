@@ -44,7 +44,7 @@ parser = Lark('''
     | ident "." ident "(" ( expr ( "," expr )* )? ")"
     | map_ref
 
-    map_ref: ident braces* -> map_ref
+    map_ref: (ident | call) braces* -> map_ref
     
     ?braces: "[" expr "]"
     
