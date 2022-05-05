@@ -8,6 +8,8 @@ def main():
     
     int main(map m, bool g)
     {
+        int test_multimap = m[12][23];
+        
         int a = 0;
         int g, g2 = g, g = 90;
         

@@ -140,15 +140,16 @@ class ParamListNode(AstNode):
 
 
 class MapRefNode(AstNode):
-    def __init__(self, map_name: IdentNode, index: ExprNode,
+    def __init__(self, map_name: IdentNode,  *keys: Tuple[ExprNode],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.map_name = map_name
-        self.index = index
+        self.keys = keys
 
     @property
-    def childs(self) -> Tuple[IdentNode, ExprNode]:
-        return self.map_name, self.index
+    def childs(self) -> Tuple[IdentNode, ...]:
+        return (self.map_name,) + self.keys
+
 
     def __str__(self) -> str:
         return 'map_reference'
