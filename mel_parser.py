@@ -20,9 +20,12 @@ parser = Lark('''
 
     num: NUMBER  -> literal
     str: ESCAPED_STRING  -> literal
-    ident: CNAME
-    type: CNAME
-
+    ident: CNAME 
+    ?type: ident -> type
+        | map_type
+    
+    MAP : "map"
+    
     ADD:     "+"
     SUB:     "-"
     MUL:     "*"
@@ -45,6 +48,8 @@ parser = Lark('''
     | map_ref
 
     map_ref: (ident | call) braces* -> map_ref
+    
+    map_type: MAP "<" type "," type ">"
     
     ?braces: "[" expr "]"
     
@@ -75,13 +80,17 @@ parser = Lark('''
 
     ?expr: logical_or
         | in
-
+    
+    ?simple_assign : ident "=" expr -> assign
+        
     ?var_decl_inner: ident
-        | ident "=" expr  -> assign
+        | simple_assign
 
     vars_decl: type var_decl_inner ( "," var_decl_inner )*
 
-    ?simple_stmt: ident "=" expr  -> assign
+    assign : ident "=" expr
+    
+    ?simple_stmt: assign
         | call
 
     ?for_stmt_list: vars_decl
@@ -91,20 +100,24 @@ parser = Lark('''
     ?for_body: stmt
         | ";"  -> stmt_list
 
-    fun_decl: type ident "(" param_list ")" stmt
-        | type ident "(" param_list ")" ";" 
+    fun_decl: type ident "(" (param ("," param) *)* ")" composite
+        | type ident "("(param ("," param) *)* ")" ";" 
     
     ?param_list: (param ("," param) *)*
     
     ?param: type ident
     
+    return: "return" expr
+    ?composite: "{" stmt_list "}"
+    
     ?stmt: fun_decl
+        | return ";"
         | vars_decl ";"
         | simple_stmt ";"
         | "if" "(" expr ")" stmt ("else" stmt)?  -> if
         | "for" "(" for_stmt_list ";" for_cond ";" for_stmt_list ")" for_body  -> for
         | "while" "(" expr ")" stmt -> while
-        | "{" stmt_list "}" -> stmt_list
+        | composite
         
     stmt_list: (stmt";"*)*
 
@@ -123,6 +136,24 @@ class MelASTBuilder(InlineTransformer):
                 return BinOpNode(op, args[0], args[2],
                                  **{'token': args[1], 'line': args[1].line, 'column': args[1].column})
             return get_bin_op_node
+        elif item in ('map_type', ):
+            def get_map_type_node(*args):
+                return TypeNode(args[0], (args[1], args[2]),
+                                **{'token': args[0], 'line': args[0].line, 'column': args[0].column})
+            return get_map_type_node
+        elif item in ('type', ):
+            def get_type_node(*args):
+                return TypeNode(args[0],
+                                **{'token': args[0], 'line': args[0].line, 'column': args[0].column})
+            return get_type_node
+        elif item in ('fun_decl', ):
+            def get_func_decl_node(*args):
+                if len(args) == 3:
+                    return FunDeclNode(type_=args[0], name=args[1], params=(), func_body=args[-1],
+                                       **{'token': args[0], 'line': args[0].line, 'column': args[0].column})
+                return FunDeclNode(args[0], args[1], args[2:-1], args[-1],
+                                   **{'token': args[0], 'line': args[0].line, 'column': args[0].column})
+            return get_func_decl_node
         else:
             def get_node(*args):
                 props = {}
