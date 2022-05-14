@@ -323,6 +323,7 @@ BIN_OP_TYPE_COMPATIBILITY = {
 # '''
 
 BUILT_IN_OBJECTS = '''
+    int map_reference(map<int, int> m, int key) {}
 '''
 
 

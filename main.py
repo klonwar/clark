@@ -23,7 +23,7 @@ def main():
         int temp = 24;
         
         if (42 in m)
-            //temp = m[42];
+            temp = m1[42];
             temp = 8;
             
         //if (g > 89)

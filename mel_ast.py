@@ -263,6 +263,8 @@ class MapRefNode(AstNode):
         super().__init__(row=row, line=line, **props)
         self.map_name = map_name
         self.keys = keys
+        self.name = "map_reference"
+
 
     @property
     def childs(self) -> Tuple[IdentNode, ...]:
@@ -292,17 +294,11 @@ class InNode(AstNode):
         self.target.semantic_check(scope)
         self.source.semantic_check(scope)
 
-        m = scope.get_ident(self.source.name)
+        m = scope.get_ident(self.source.node_ident.name)
 
         if m is None:
             self.semantic_error('Словаря не существует')
         self.source = type_convert(self.source, TypeDesc.MAP)
-
-        # if m.type != MAP:
-        #     self.semantic_error('{} не словарь'.format(m.name))
-        # #
-        # if self.target.node_type.base_type != m.type.map_types[0]:
-        #     self.semantic_error('Тип ключа не совпадает с типом словаря')
 
         self.target = type_convert(self.target, self.target.node_type, comment='тип ключа словаря')
         self.node_type = TypeDesc.BOOL
