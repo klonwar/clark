@@ -272,19 +272,7 @@ class MapRefNode(AstNode):
         return 'map_reference'
 
     def semantic_check(self, scope: IdentScope) -> None:
-        self.map_name.semantic_check(scope)
-        count = 0
-        for i in range(len(self.keys)):
-            key: ExprNode = self.keys[i]
-            key.semantic_check(scope)
-            if self.map_name.node_type.array_level < i:
-                self.semantic_error("Размерность массива " + self.map_name.name + " = " + str(
-                    self.map_name.node_type.array_level) + ", а обращение идёт к элементу вложенности уровня " + str(count))
-                if key.node_type.base_type != scope.get_ident(str(self.map_name)).type.base_type or not key.node_type.is_simple or key.node_type.is_array:
-                    self.semantic_error("Индекс массива не целое число")
-            self.node_type = TypeDesc(base_type_=self.arr.node_type.base_type,
-                                      array_level=self.arr.node_type.array_level - count)
-
+        pass
 
 class InNode(AstNode):
     def __init__(self,  target: ExprNode, source: IdentNode,
